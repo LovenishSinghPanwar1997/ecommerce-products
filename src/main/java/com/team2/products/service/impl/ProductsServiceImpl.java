@@ -15,6 +15,7 @@ import com.team2.products.service.SubCategoryService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,7 +42,9 @@ public class ProductsServiceImpl implements ProductsService {
         UUID uuid = UUID.randomUUID();
         Products products = new Products();
         BeanUtils.copyProperties(merchantAddProdDTO,products);
-        products.setProductId(uuid.toString());
+        if(StringUtils.isEmpty(merchantAddProdDTO.getProductId())) {
+            products.setProductId(uuid.toString());
+        }
         if(null!=merchantAddProdDTO.getCategories())
         {
             if(merchantAddProdDTO.getCategories().size()>0){
@@ -77,7 +80,7 @@ public class ProductsServiceImpl implements ProductsService {
             productListResponse.setId(products.getProductId());
             productListResponse.setImage(products.getImages().get(0));
             productListResponse.setName(products.getProductName());
-//            productListResponse.setPrice();
+            productListResponse.setPrice(merchantClient.getPriceByProductId(products.getProductId()));
             productListResponses.add(productListResponse);
             categoryMap.put(categoryId,productListResponses);
         }
@@ -96,5 +99,16 @@ public class ProductsServiceImpl implements ProductsService {
         return getCategoriesResponse;
 
 
+    }
+
+    @Override
+    public List<Products> getAllProducts() {
+        List<Products> productsList = productsRepository.findAll();
+        return productsList;
+    }
+
+    @Override
+    public Products getProductById(String productId) {
+       return productsRepository.findByProductId(productId);
     }
 }
